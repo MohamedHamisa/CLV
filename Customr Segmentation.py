@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
 #Recency Frequency Monetary (RFM)
 #is useful cocept in business analysis tool to divide customers into segments 
 
@@ -12,7 +8,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-# In[2]:
 
 
 #Import Online Retail Data containing transactions from 01/12/2010 and 09/12/2011
@@ -20,14 +15,12 @@ Rtl_data = pd.read_csv('RetailData.csv', encoding = 'unicode_escape')  #to avoid
 Rtl_data.head()
 
 
-# In[3]:
 
 
 #Check the shape (number of columns and rows) in the dataset
 Rtl_data.shape
 
 
-# In[4]:
 
 
 #Customer distribution by country
@@ -35,21 +28,18 @@ country_cust_data=Rtl_data[['Country','CustomerID']].drop_duplicates()
 country_cust_data.groupby(['Country'])['CustomerID'].aggregate('count').reset_index().sort_values('CustomerID', ascending=False) #aggregate to count
 
 
-# In[5]:
 
 
 #Keep only United Kingdom data
 Rtl_data = Rtl_data.query("Country=='United Kingdom'").reset_index(drop=True) #filter iut any data except uk
 
 
-# In[6]:
 
 
 #Check for missing values in the dataset
 Rtl_data.isnull().sum(axis=0)
 
 
-# In[7]:
 
 
 #Remove missing values from CustomerID column, can ignore missing values in description column
@@ -59,42 +49,36 @@ Rtl_data = Rtl_data[pd.notnull(Rtl_data['CustomerID'])]
 Rtl_data.Quantity.min()
 
 
-# In[8]:
 
 
 #Validate if there are any negative values in UnitPrice column
 Rtl_data.UnitPrice.min()
 
 
-# In[9]:
 
 
 #Filter out records with negative values
 Rtl_data = Rtl_data[(Rtl_data['Quantity']>0)]
 
 
-# In[10]:
 
 
 #Convert the string date field to datetime
 Rtl_data['InvoiceDate'] = pd.to_datetime(Rtl_data['InvoiceDate'])
 
 
-# In[11]:
 
 
 #Add new column depicting total amount
 Rtl_data['TotalAmount'] = Rtl_data['Quantity'] * Rtl_data['UnitPrice']
 
 
-# In[12]:
 
 
 #Check the shape (number of columns and rows) in the dataset after data is cleaned
 Rtl_data.shape
 
 
-# In[13]:
 
 
 Rtl_data.head()
@@ -102,7 +86,6 @@ Rtl_data.head()
 
 # ## RFM Modelling
 
-# In[14]:
 
 
 #Recency = Latest Date - Last Inovice Data, Frequency = count of invoice no. of transaction(s), Monetary = Sum of Total 
@@ -126,14 +109,12 @@ RFMScores.rename(columns={'InvoiceDate': 'Recency',
 RFMScores.reset_index().head()
 
 
-# In[15]:
 
 
 #Descriptive Statistics (Recency)
 RFMScores.Recency.describe()
 
 
-# In[16]:
 
 
 #Recency distribution plot
@@ -143,14 +124,12 @@ x = RFMScores['Recency']
 ax = sns.distplot(x)
 
 
-# In[17]:
 
 
 #Descriptive Statistics (Frequency)
 RFMScores.Frequency.describe()
 
 
-# In[18]:
 
 
 #Frequency distribution plot, taking observations which have frequency less than 1000
@@ -160,14 +139,12 @@ x = RFMScores.query('Frequency < 1000')['Frequency']
 ax = sns.distplot(x)
 
 
-# In[19]:
 
 
 #Descriptive Statistics (Monetary)
 RFMScores.Monetary.describe()
 
 
-# In[20]:
 
 
 #Monateray distribution plot, taking observations which have monetary value less than 10000
@@ -177,7 +154,6 @@ x = RFMScores.query('Monetary < 10000')['Monetary']
 ax = sns.distplot(x)
 
 
-# In[21]:
 
 
 #Split into four segments using quantiles
@@ -185,13 +161,11 @@ quantiles = RFMScores.quantile(q=[0.25,0.5,0.75])
 quantiles = quantiles.to_dict()
 
 
-# In[22]:
 
 
 quantiles
 
 
-# In[23]:
 
 
 #Functions to create R, F and M segments
@@ -217,7 +191,6 @@ def FnMScoring(x,p,d):
         return 1
 
 
-# In[24]:
 
 
 #Calculate Add R, F and M segment value columns in the existing dataset to show R, F and M segment values
@@ -227,7 +200,6 @@ RFMScores['M'] = RFMScores['Monetary'].apply(FnMScoring, args=('Monetary',quanti
 RFMScores.head()
 
 
-# In[25]:
 
 
 #Calculate and Add RFMGroup value column showing combined concatenated score of RFM
@@ -238,7 +210,6 @@ RFMScores['RFMScore'] = RFMScores[['R', 'F', 'M']].sum(axis = 1)
 RFMScores.head()
 
 
-# In[26]:
 
 
 #Assign Loyalty Level to each customer
@@ -248,14 +219,12 @@ RFMScores['RFM_Loyalty_Level'] = Score_cuts.values
 RFMScores.reset_index().head()
 
 
-# In[27]:
 
 
 #Validate the data for RFMGroup = 111
 RFMScores[RFMScores['RFMGroup']=='111'].sort_values('Monetary', ascending=False).reset_index().head(10)
 
 
-# In[28]:
 
 
 import chart_studio as cs
@@ -440,7 +409,6 @@ po.iplot(fig)
 
 # ## K-Means Clustering
 
-# In[29]:
 
 
 #Handle negative and zero values so as to handle infinite numbers during log transformation
@@ -457,7 +425,6 @@ RFMScores['Monetary'] = [handle_neg_n_zero(x) for x in RFMScores.Monetary]
 Log_Tfd_Data = RFMScores[['Recency', 'Frequency', 'Monetary']].apply(np.log, axis = 1).round(3)
 #log transformation :replace x with log x
 
-# In[30]:
 
 
 #Data distribution after data normalization for Recency
@@ -465,7 +432,6 @@ Recency_Plot = Log_Tfd_Data['Recency']
 ax = sns.distplot(Recency_Plot)
 
 
-# In[31]:
 
 
 #Data distribution after data normalization for Frequency
@@ -473,7 +439,6 @@ Frequency_Plot = Log_Tfd_Data.query('Frequency < 1000')['Frequency']
 ax = sns.distplot(Frequency_Plot)
 
 
-# In[32]:
 
 
 #Data distribution after data normalization for Monetary
@@ -481,7 +446,6 @@ Monetary_Plot = Log_Tfd_Data.query('Monetary < 10000')['Monetary']
 ax = sns.distplot(Monetary_Plot)
 
 
-# In[33]:
 
 
 from sklearn.preprocessing import StandardScaler
@@ -494,7 +458,6 @@ Scaled_Data = scaleobj.fit_transform(Log_Tfd_Data)
 Scaled_Data = pd.DataFrame(Scaled_Data, index = RFMScores.index, columns = Log_Tfd_Data.columns)
 
 
-# In[36]:
 
 
 from sklearn.cluster import KMeans
@@ -513,7 +476,6 @@ plt.title('Elbow Method For Optimal k')
 plt.show()
 
 
-# In[37]:
 
 
 #Perform K-Mean Clustering or build the K-Means clustering model
@@ -525,7 +487,6 @@ RFMScores['Cluster'] = KMean_clust.labels_
 RFMScores.head()
 
 
-# In[38]:
 
 
 from matplotlib import pyplot as plt
@@ -542,7 +503,6 @@ ax = RFMScores.plot(
 )
 
 
-# In[39]:
 
 
 RFMScores.head()
